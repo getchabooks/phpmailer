@@ -111,6 +111,12 @@ class POP3 {
    */
   public $password;
 
+  /**
+   * Sets the POP3 PHPMailer Version number
+   * @var string
+   */
+  public $Version         = '5.1';
+
   /////////////////////////////////////////////////
   // PROPERTIES, PRIVATE AND PROTECTED
   /////////////////////////////////////////////////

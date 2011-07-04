@@ -68,6 +68,12 @@ class SMTP {
    */
   public $do_verp = false;
 
+  /**
+   * Sets the SMTP PHPMailer Version number
+   * @var string
+   */
+  public $Version         = '5.1';
+
   /////////////////////////////////////////////////
   // PROPERTIES, PRIVATE AND PROTECTED
   /////////////////////////////////////////////////
