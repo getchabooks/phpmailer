@@ -703,7 +703,7 @@ class PHPMailer {
     $to = implode(', ', $toArr);
 
     if (empty($this->Sender)) {
-      $params = "-oi -f %s";
+      $params = "-oi ";
     } else {
       $params = sprintf("-oi -f %s", $this->Sender);
     }
