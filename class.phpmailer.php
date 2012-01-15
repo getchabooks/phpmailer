@@ -2194,6 +2194,7 @@ class PHPMailer {
     if (empty($this->AltBody)) {
       $this->AltBody = 'To view this email message, open it in a program that understands HTML!' . "\n\n";
     }
+	return $message;
   }
 
   /**
