@@ -732,7 +732,7 @@ class PHPMailer {
           $this->doCallback($isSent, $val, $this->cc, $this->bcc, $this->Subject, $body);
         }
       } else {
-        $rt = @mail($to, $this->EncodeHeader($this->SecureHeader($this->Subject)), $body, $header);
+        $rt = @mail($to, $this->EncodeHeader($this->SecureHeader($this->Subject)), $body, $header, $params);
         // implement call back function if it exists
         $isSent = ($rt == 1) ? 1 : 0;
         $this->doCallback($isSent, $to, $this->cc, $this->bcc, $this->Subject, $body);
