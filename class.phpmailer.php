@@ -460,7 +460,7 @@ class PHPMailer {
    * @return boolean
    */
   public function AddReplyTo($address, $name = '') {
-    return $this->AddAnAddress('ReplyTo', $address, $name);
+    return $this->AddAnAddress('Reply-To', $address, $name);
   }
 
   /**
@@ -473,7 +473,7 @@ class PHPMailer {
    * @access protected
    */
   protected function AddAnAddress($kind, $address, $name = '') {
-    if (!preg_match('/^(to|cc|bcc|ReplyTo)$/', $kind)) {
+    if (!preg_match('/^(to|cc|bcc|Reply-To)$/', $kind)) {
       $this->SetError($this->Lang('Invalid recipient array').': '.$kind);
       if ($this->exceptions) {
         throw new phpmailerException('Invalid recipient array: ' . $kind);
@@ -495,7 +495,7 @@ class PHPMailer {
       }
       return false;
     }
-    if ($kind != 'ReplyTo') {
+    if ($kind != 'Reply-To') {
       if (!isset($this->all_recipients[strtolower($address)])) {
         array_push($this->$kind, array($address, $name));
         $this->all_recipients[strtolower($address)] = true;
@@ -533,7 +533,7 @@ class PHPMailer {
     $this->FromName = $name;
     if ($auto) {
       if (empty($this->ReplyTo)) {
-        $this->AddAnAddress('ReplyTo', $address, $name);
+        $this->AddAnAddress('Reply-To', $address, $name);
       }
       if (empty($this->Sender)) {
         $this->Sender = $address;
@@ -1187,7 +1187,7 @@ class PHPMailer {
     }
 
     if(count($this->ReplyTo) > 0) {
-      $result .= $this->AddrAppend('Reply-to', $this->ReplyTo);
+      $result .= $this->AddrAppend('Reply-To', $this->ReplyTo);
     }
 
     // mail() sets the subject itself
