@@ -2166,7 +2166,7 @@ class PHPMailer {
    * @return $message
    */
   public function MsgHTML($message, $basedir = '') {
-    preg_match_all("/(src|background)=\"(.*)\"/Ui", $message, $images);
+    preg_match_all("/(src|background)=[\"'](.*)[\"']/Ui", $message, $images);
     if(isset($images[2])) {
       foreach($images[2] as $i => $url) {
         // do not change urls for absolute images (thanks to corvuscorax)
@@ -2180,7 +2180,7 @@ class PHPMailer {
           if ( strlen($basedir) > 1 && substr($basedir, -1) != '/') { $basedir .= '/'; }
           if ( strlen($directory) > 1 && substr($directory, -1) != '/') { $directory .= '/'; }
           if ( $this->AddEmbeddedImage($basedir.$directory.$filename, md5($filename), $filename, 'base64', $mimeType) ) {
-            $message = preg_replace("/".$images[1][$i]."=\"".preg_quote($url, '/')."\"/Ui", $images[1][$i]."=\"".$cid."\"", $message);
+            $message = preg_replace("/".$images[1][$i]."=[\"']".preg_quote($url, '/')."[\"']/Ui", $images[1][$i]."=\"".$cid."\"", $message);
           }
         }
       }
