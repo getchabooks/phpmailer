@@ -2187,10 +2187,12 @@ class PHPMailer {
     }
     $this->IsHTML(true);
     $this->Body = $message;
-    $textMsg = trim(strip_tags(preg_replace('/<(head|title|style|script)[^>]*>.*?<\/\\1>/s', '', $message)));
-    if (!empty($textMsg) && empty($this->AltBody)) {
-      $this->AltBody = html_entity_decode($textMsg);
-    }
+	if (empty($this->AltBody)) {
+		$textMsg = trim(strip_tags(preg_replace('/<(head|title|style|script)[^>]*>.*?<\/\\1>/s', '', $message)));
+		if (!empty($textMsg)) {
+			$this->AltBody = html_entity_decode($textMsg, ENT_QUOTES, $this->CharSet);
+		}
+	}
     if (empty($this->AltBody)) {
       $this->AltBody = 'To view this email message, open it in a program that understands HTML!' . "\n\n";
     }
