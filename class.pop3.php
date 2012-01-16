@@ -37,7 +37,7 @@
 
 /**
  * POP Before SMTP Authentication Class
- * Version 5.2.0
+ * Version 5.2.1
  *
  * Author: Richard Davey (rich@corephp.co.uk)
  * Modifications: Andy Prevost
