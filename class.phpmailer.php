@@ -132,8 +132,9 @@ class PHPMailer {
   /**
    * Stores the complete sent MIME message (Body and Headers)
    * @var string
-   */
-  public $FormattedMail     = '';
+   * @access protected
+  */
+  protected $SentMIMEMessage     = '';
 
   /**
    * Sets word wrapping on the body of the message to a given number of
@@ -586,6 +587,7 @@ class PHPMailer {
       if(!$this->PreSend()) return false;
       return $this->PostSend();
     } catch (phpmailerException $e) {
+	  $this->SentMIMEMessage = '';
       $this->SetError($e->getMessage());
       if ($this->exceptions) {
         throw $e;
@@ -636,7 +638,7 @@ class PHPMailer {
         $this->MIMEHeader = str_replace("\r\n", "\n", $header_dkim) . $this->MIMEHeader;
       }
 
-      $this->FormattedMail = sprintf("%s%s\r\n\r\n%s",$this->MIMEHeader,$mailHeader,$this->MIMEBody);
+      $this->SentMIMEMessage = sprintf("%s%s\r\n\r\n%s",$this->MIMEHeader,$mailHeader,$this->MIMEBody);
       return true;
 
     } catch (phpmailerException $e) {
@@ -1283,6 +1285,16 @@ class PHPMailer {
 
     return $result;
   }
+
+  /**
+   * Returns the MIME message (headers and body). Only really valid post PreSend().
+   * @access public
+   * @return string
+   */
+  public function GetSentMIMEMessage() {
+    return $this->SentMIMEMessage;
+  }
+
 
   /**
    * Assembles the message body.  Returns an empty string on failure.
