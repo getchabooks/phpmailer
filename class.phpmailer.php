@@ -130,6 +130,12 @@ class PHPMailer {
   protected $MIMEHeader     = '';
 
   /**
+   * Stores the complete sent MIME message (Body and Headers)
+   * @var string
+   */
+  public $FormattedMail     = '';
+
+  /**
    * Sets word wrapping on the body of the message to a given number of
    * characters.
    * @var int
@@ -590,6 +596,7 @@ class PHPMailer {
 
   protected function PreSend() {
     try {
+	  $mailHeader = "";
       if ((count($this->to) + count($this->cc) + count($this->bcc)) < 1) {
         throw new phpmailerException($this->Lang('provide_address'), self::STOP_CRITICAL);
       }
@@ -609,6 +616,19 @@ class PHPMailer {
       $this->MIMEHeader = $this->CreateHeader();
       $this->MIMEBody = $this->CreateBody();
 
+      // To capture the complete message when using mail(), create
+	  // an extra header list which CreateHeader() doesn't fold in
+      if ($this->Mailer == 'mail') {
+        if (count($this->to) > 0) {
+          $mailHeader .= $this->AddrAppend("To", $this->to);
+        } else {
+          $mailHeader .= $this->HeaderLine("To", "undisclosed-recipients:;");
+        }
+        $mailHeader .= $this->HeaderLine('Subject', $this->EncodeHeader($this->SecureHeader(trim($this->Subject))));
+        // if(count($this->cc) > 0) {
+            // $mailHeader .= $this->AddrAppend("Cc", $this->cc);
+        // }
+      }
 
       // digitally sign with DKIM if enabled
       if ($this->DKIM_domain && $this->DKIM_private) {
@@ -616,7 +636,9 @@ class PHPMailer {
         $this->MIMEHeader = str_replace("\r\n", "\n", $header_dkim) . $this->MIMEHeader;
       }
 
+      $this->FormattedMail = sprintf("%s%s\r\n\r\n%s",$this->MIMEHeader,$mailHeader,$this->MIMEBody);
       return true;
+
     } catch (phpmailerException $e) {
       $this->SetError($e->getMessage());
       if ($this->exceptions) {
@@ -634,6 +656,8 @@ class PHPMailer {
           return $this->SendmailSend($this->MIMEHeader, $this->MIMEBody);
         case 'smtp':
           return $this->SmtpSend($this->MIMEHeader, $this->MIMEBody);
+        case 'mail':
+          return $this->MailSend($this->MIMEHeader, $this->MIMEBody);
         default:
           return $this->MailSend($this->MIMEHeader, $this->MIMEBody);
       }
@@ -1169,7 +1193,7 @@ class PHPMailer {
           $result .= $this->HeaderLine('To', 'undisclosed-recipients:;');
         }
       }
-    }
+	}
 
     $from = array();
     $from[0][0] = trim($this->From);
