@@ -2027,7 +2027,7 @@ class PHPMailer {
   }
 
   public function AlternativeExists() {
-    return strlen($this->AltBody)>0;
+    return !empty($this->AltBody);
   }
 
   /////////////////////////////////////////////////
