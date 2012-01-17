@@ -1633,7 +1633,7 @@ class PHPMailer {
       if (!is_readable($path)) {
         throw new phpmailerException($this->Lang('file_open') . $path, self::STOP_CONTINUE);
       }
-      if (function_exists('get_magic_quotes')) {
+      if (!function_exists('get_magic_quotes')) {
         function get_magic_quotes() {
           return false;
         }
