@@ -235,6 +235,24 @@ class PHPMailer {
   public $Password      = '';
 
   /**
+   *  Sets SMTP auth type.
+   *  @var string
+   */
+  public $AuthType      = '';
+  
+  /**
+   *  Sets SMTP realm.
+   *  @var string
+   */
+  public $Realm         = '';
+
+  /**
+   *  Sets SMTP workstation.
+   *  @var string
+   */
+  public $Workstation   = '';
+
+  /**
    * Sets the SMTP server timeout in seconds.
    * This function will not work with the win32 version.
    * @var int
@@ -902,7 +920,8 @@ class PHPMailer {
 
           $connection = true;
           if ($this->SMTPAuth) {
-            if (!$this->smtp->Authenticate($this->Username, $this->Password)) {
+            if (!$this->smtp->Authenticate($this->Username, $this->Password, $this->AuthType,
+										   $this->Realm, $this->Workstation)) {
               throw new phpmailerException($this->Lang('authenticate'));
             }
           }

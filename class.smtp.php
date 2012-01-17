@@ -210,58 +210,123 @@ class SMTP {
    * @access public
    * @return bool
    */
-  public function Authenticate($username, $password) {
-    // Start authentication
-    fputs($this->smtp_conn,"AUTH LOGIN" . $this->CRLF);
-
-    $rply = $this->get_lines();
-    $code = substr($rply,0,3);
-
-    if($code != 334) {
-      $this->error =
-        array("error" => "AUTH not accepted from server",
-              "smtp_code" => $code,
-              "smtp_msg" => substr($rply,4));
-      if($this->do_debug >= 1) {
-        echo "SMTP -> ERROR: " . $this->error["error"] . ": " . $rply . $this->CRLF . '<br />';
-      }
-      return false;
+  public function Authenticate($username, $password, $authtype='LOGIN', $realm='',
+                               $workstation='') {
+    if (empty($authtype)) {
+      $authtype = 'LOGIN';
     }
 
-    // Send encoded username
-    fputs($this->smtp_conn, base64_encode($username) . $this->CRLF);
+    switch ($authtype) {
+      case 'LOGIN':
+        // Start authentication
+        fputs($this->smtp_conn,"AUTH LOGIN" . $this->CRLF);
+    
+        $rply = $this->get_lines();
+        $code = substr($rply,0,3);
+    
+        if($code != 334) {
+          $this->error =
+            array("error" => "AUTH not accepted from server",
+                  "smtp_code" => $code,
+                  "smtp_msg" => substr($rply,4));
+          if($this->do_debug >= 1) {
+            echo "SMTP -> ERROR: " . $this->error["error"] . ": " . $rply . $this->CRLF . '<br />';
+          }
+          return false;
+        }
+    
+        // Send encoded username
+        fputs($this->smtp_conn, base64_encode($username) . $this->CRLF);
+    
+        $rply = $this->get_lines();
+        $code = substr($rply,0,3);
+    
+        if($code != 334) {
+          $this->error =
+            array("error" => "Username not accepted from server",
+                  "smtp_code" => $code,
+                  "smtp_msg" => substr($rply,4));
+          if($this->do_debug >= 1) {
+            echo "SMTP -> ERROR: " . $this->error["error"] . ": " . $rply . $this->CRLF . '<br />';
+          }
+          return false;
+        }
+    
+        // Send encoded password
+        fputs($this->smtp_conn, base64_encode($password) . $this->CRLF);
+    
+        $rply = $this->get_lines();
+        $code = substr($rply,0,3);
+    
+        if($code != 235) {
+          $this->error =
+            array("error" => "Password not accepted from server",
+                  "smtp_code" => $code,
+                  "smtp_msg" => substr($rply,4));
+          if($this->do_debug >= 1) {
+            echo "SMTP -> ERROR: " . $this->error["error"] . ": " . $rply . $this->CRLF . '<br />';
+          }
+          return false;
+        }
+        break;
+      case 'NTLM':
+        // How to telnet in windows: http://technet.microsoft.com/en-us/library/aa995718%28EXCHG.65%29.aspx
+        // PROTOCOL Documentation http://curl.haxx.se/rfc/ntlm.html#ntlmSmtpAuthentication
+        // ntlm lib: http://www.phpclasses.org/package/1888-PHP-Single-API-for-standard-authentication-mechanisms.html
+        // Full working smtp ntlm sample: http://www.phpclasses.org/package/14-PHP-Sends-e-mail-messages-via-SMTP-protocol.html
+        require_once('ntlm_sasl_client.php');
+        $temp = new stdClass();
+        $ntlm_client = new ntlm_sasl_client_class;
+        if(! $ntlm_client->Initialize($temp)){//let's test if every function its available
+            $this->error = array("error" => $temp->error);
+            if($this->do_debug >= 1) {
+                echo "You need to enable some modules in your php.ini file: " . $this->error["error"] . $this->CRLF;
+            }
+            return false;
+        }
+        $msg1 = $ntlm_client->TypeMsg1($realm, $workstation);//msg1
+        
+        fputs($this->smtp_conn,"AUTH NTLM " . base64_encode($msg1) . $this->CRLF);
 
-    $rply = $this->get_lines();
-    $code = substr($rply,0,3);
+        $rply = $this->get_lines();
+        $code = substr($rply,0,3);
+        
 
-    if($code != 334) {
-      $this->error =
-        array("error" => "Username not accepted from server",
-              "smtp_code" => $code,
-              "smtp_msg" => substr($rply,4));
-      if($this->do_debug >= 1) {
-        echo "SMTP -> ERROR: " . $this->error["error"] . ": " . $rply . $this->CRLF . '<br />';
-      }
-      return false;
+        if($code != 334) {
+            $this->error =
+                array("error" => "AUTH not accepted from server",
+                      "smtp_code" => $code,
+                      "smtp_msg" => substr($rply,4));
+            if($this->do_debug >= 1) {
+                echo "SMTP -> ERROR: " . $this->error["error"] .
+                         ": " . $rply . $this->CRLF;
+            }
+            return false;
+        }
+        
+        $challange = substr($rply,3);//though 0 based, there is a white space after the 3 digit number....//msg2
+        $challange = base64_decode($challange);
+        $ntlm_res = $ntlm_client->NTLMResponse(substr($challange,24,8),$password);
+        $msg3 = $ntlm_client->TypeMsg3($ntlm_res,$username,$realm,$workstation);//msg3
+        // Send encoded username
+        fputs($this->smtp_conn, base64_encode($msg3) . $this->CRLF);
+
+        $rply = $this->get_lines();
+        $code = substr($rply,0,3);
+
+        if($code != 235) {
+            $this->error =
+                array("error" => "Could not authenticate",
+                      "smtp_code" => $code,
+                      "smtp_msg" => substr($rply,4));
+            if($this->do_debug >= 1) {
+                echo "SMTP -> ERROR: " . $this->error["error"] .
+                         ": " . $rply . $this->CRLF;
+            }
+            return false;
+        }
+        break;
     }
-
-    // Send encoded password
-    fputs($this->smtp_conn, base64_encode($password) . $this->CRLF);
-
-    $rply = $this->get_lines();
-    $code = substr($rply,0,3);
-
-    if($code != 235) {
-      $this->error =
-        array("error" => "Password not accepted from server",
-              "smtp_code" => $code,
-              "smtp_msg" => substr($rply,4));
-      if($this->do_debug >= 1) {
-        echo "SMTP -> ERROR: " . $this->error["error"] . ": " . $rply . $this->CRLF . '<br />';
-      }
-      return false;
-    }
-
     return true;
   }
 
