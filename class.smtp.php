@@ -270,10 +270,13 @@ class SMTP {
         }
         break;
       case 'NTLM':
-        // How to telnet in windows: http://technet.microsoft.com/en-us/library/aa995718%28EXCHG.65%29.aspx
-        // PROTOCOL Documentation http://curl.haxx.se/rfc/ntlm.html#ntlmSmtpAuthentication
-        // ntlm lib: http://www.phpclasses.org/package/1888-PHP-Single-API-for-standard-authentication-mechanisms.html
-        // Full working smtp ntlm sample: http://www.phpclasses.org/package/14-PHP-Sends-e-mail-messages-via-SMTP-protocol.html
+        /*
+         * ntlm_sasl_client.php
+         ** Bundled with Permission
+         **
+         ** How to telnet in windows: http://technet.microsoft.com/en-us/library/aa995718%28EXCHG.65%29.aspx
+         ** PROTOCOL Documentation http://curl.haxx.se/rfc/ntlm.html#ntlmSmtpAuthentication
+         */
         require_once('ntlm_sasl_client.php');
         $temp = new stdClass();
         $ntlm_client = new ntlm_sasl_client_class;
