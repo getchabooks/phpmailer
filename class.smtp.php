@@ -146,8 +146,13 @@ class SMTP {
 
     // SMTP server can take longer to respond, give longer timeout for first read
     // Windows does not have support for this timeout function
-    if(substr(PHP_OS, 0, 3) != "WIN")
+    if(substr(PHP_OS, 0, 3) != "WIN") {
+     $max = ini_get('max_execution_time');
+     if ($max != 0 && $tval > $max) { // don't bother if unlimited
+      @set_time_limit($tval);
+     }
      socket_set_timeout($this->smtp_conn, $tval, 0);
+    }
 
     // get any announcement
     $announce = $this->get_lines();
