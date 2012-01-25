@@ -2208,10 +2208,7 @@ class PHPMailer {
    * @return string
    */
   public function FixEOL($str) {
-    $str = str_replace("\r\n", "\n", $str);
-    $str = str_replace("\r", "\n", $str);
-    $str = str_replace("\n", $this->LE, $str);
-    return $str;
+    return str_replace(array("\r\n", "\r", "\n"), $this->LE, $str);
   }
 
   /**
@@ -2397,9 +2394,7 @@ class PHPMailer {
    * @return string
    */
   public function SecureHeader($str) {
-    $str = str_replace("\r", '', $str);
-    $str = str_replace("\n", '', $str);
-    return trim($str);
+	return trim(str_replace(array("\r", "\n"), '', $str));
   }
 
   /**
